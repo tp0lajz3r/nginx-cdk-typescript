@@ -3,22 +3,19 @@ import { Construct } from 'constructs';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as fs from 'fs';
 
+const config = JSON.parse(fs.readFileSync('config.json', 'utf-8'));
 
 export class EcsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // ECS Cluster
-    // ECS Service
-    // ALB
-    // Security Groups
 
     // Imported values from other stacks
     const ecrUri = cdk.Fn.importValue('ECRRepoURI');
     const privateSubnet1Id = cdk.Fn.importValue('PrivateSubnet1Id');
     const privateSubnet2Id = cdk.Fn.importValue('PrivateSubnet2Id');
-    const vpcId = cdk.Fn.importValue('VPCId');
     const ecsSecurityGroupId = cdk.Fn.importValue('EcsSecurityGroupId');
     const targetGroupArn = cdk.Fn.importValue('TargetGroupArn');
 
@@ -44,7 +41,7 @@ export class EcsStack extends cdk.Stack {
     });
 
     const logGroup = new logs.CfnLogGroup(this, 'EcsLogGroup', {
-      logGroupName: '/ecs/nginx',
+      logGroupName: config.ecs.logGroupName,
       retentionInDays: 7,
       tags: [
         {
@@ -53,15 +50,15 @@ export class EcsStack extends cdk.Stack {
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
 
     const nginxTaskDefinition = new ecs.CfnTaskDefinition(this, 'NginxTaskDef', {
-      family: 'nginx-task-def-l1',
-      cpu: '256',
-      memory: '512',
+      family: config.ecs.taskDefinitionFamily,
+      cpu: config.ecs.taskCpu,
+      memory: config.ecs.taskMemory,
       networkMode: 'awsvpc',
       requiresCompatibilities: ['FARGATE'],
       executionRoleArn: ecsTaskExecutionRole.attrArn,
@@ -93,15 +90,15 @@ export class EcsStack extends cdk.Stack {
     });
 
     const ecsCluster = new ecs.CfnCluster(this, 'EcsCluster', {
-      clusterName: 'demo-ecs-cluster-l1',
+      clusterName: config.ecs.clusterName,
       tags: [
         {
           key: 'Name',
-          value: 'demo-ecs-cluster-l1',
+          value: config.ecs.clusterName,
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
@@ -109,7 +106,7 @@ export class EcsStack extends cdk.Stack {
 
     const ecsService = new ecs.CfnService(this, 'EcsService', {
       cluster: ecsCluster.ref,
-      serviceName: 'demo-ecs-service-l1',
+      serviceName: config.ecs.serviceName,
       taskDefinition: nginxTaskDefinition.ref,
       desiredCount: 1,
       launchType: 'FARGATE',
@@ -130,11 +127,11 @@ export class EcsStack extends cdk.Stack {
       tags: [
         {
           key: 'Name',
-          value: 'demo-ecs-service-l1',
+          value: config.ecs.serviceName,
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     }); 

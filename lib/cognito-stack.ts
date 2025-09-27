@@ -1,14 +1,25 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as fs from 'fs';
+
+const config = JSON.parse(fs.readFileSync('config.json', 'utf-8'));
 
 export class CognitoStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // Env Variables
+    const url1 = process.env.COGNITO_URL1;
+    const url2 = process.env.COGNITO_URL2;
+
+    if (!url1 || !url2) {
+      throw new Error('COGNITO_URL1 and COGNITO_URL2 environment variables must be set');
+    }
+
     // Cognito User Pool
     const userPool = new cognito.CfnUserPool(this, 'DemoUserPool', {
-      userPoolName: 'demo-user-pool-l1',
+      userPoolName: config.cognito.userPoolName,
       autoVerifiedAttributes: ['email'],
       usernameAttributes: ['email'],
       mfaConfiguration: 'OFF',
@@ -32,20 +43,20 @@ export class CognitoStack extends cdk.Stack {
 
     // App client
     const userPoolClient = new cognito.CfnUserPoolClient(this, 'DemoUserPoolClient', {
-      clientName: 'demo-user-pool-client-l1',
+      clientName: config.cognito.userPoolClientName,
       userPoolId: userPool.ref,
       generateSecret: true,
       allowedOAuthFlows: ['code'],
       allowedOAuthScopes: ['openid', 'email'],
       allowedOAuthFlowsUserPoolClient: true,
       supportedIdentityProviders: ['COGNITO'],
-      callbackUrLs: ['https://demo-nginx-l1.do-t.tech/oauth2/idpresponse', 'https://demo-nginx-l1.do-t.tech/oauth2/idpresponse/'],
-      logoutUrLs: ['https://demo-nginx-l1.do-t.tech/oauth2/idpresponse', 'https://demo-nginx-l1.do-t.tech/oauth2/idpresponse/'],
+      callbackUrLs: [url1!, url2!],
+      logoutUrLs: [url1!, url2!],
     });
 
     // User Pool Domain
     const userPoolDomain = new cognito.CfnUserPoolDomain(this, 'DemoUserPoolDomain', {
-      domain: 'demo-user-pool-domain-l1',
+      domain: config.cognito.userPoolDomainPrefix,
       userPoolId: userPool.ref,
     });
 

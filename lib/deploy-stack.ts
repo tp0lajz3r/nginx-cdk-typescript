@@ -4,11 +4,29 @@ import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as fs from 'fs';
 
+const config = JSON.parse(fs.readFileSync('config.json', 'utf-8'));
 
 export class DeployStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    // ENV variables
+    const region = process.env.AWS_REGION || config.global.region;
+    const condeconnectionsArn = process.env.CODECONNECTION_ARN || config.deploy.codeconnectionsArn;
+    const repository = process.env.REPOSITORY || config.deploy.repository;
+
+    // Validate required config values
+    if (!condeconnectionsArn) {
+      throw new Error('CODECONNECTION_ARN is not set in environment variables or config.json');
+    }
+    if (!repository) {
+      throw new Error('REPOSITORY is not set in environment variables or config.json');
+    }
+    if (!region) {
+      throw new Error('AWS_REGION is not set in environment variables or config.json');
+    }
 
     // IAM roles
     const codebuildRole = new iam.CfnRole(this, 'CodeBuildServiceRole', {
@@ -67,7 +85,7 @@ export class DeployStack extends cdk.Stack {
             Action: [
               'codestar-connections:UseConnection'
             ],
-            Resource: 'arn:aws:codeconnections:eu-central-1:664492798177:connection/8b8f02d2-f161-4f3f-a84b-a02b94579135'
+            Resource: `${condeconnectionsArn}`
           }
         ]
       }
@@ -80,7 +98,7 @@ export class DeployStack extends cdk.Stack {
 
     // Artifact Bucket
     const artifactBucket = new s3.CfnBucket(this, 'ArtifactBucket', {
-      bucketName: 'codepipeline-demo-l1-artifact-store',
+      bucketName: config.deploy.artifactBucketName,
       versioningConfiguration: {
         status: 'Enabled',
       },
@@ -88,7 +106,7 @@ export class DeployStack extends cdk.Stack {
 
     // CodeBuild
     const buildProject = new codebuild.CfnProject(this, 'DemoBuildProject', {
-      name: 'DemoBuildProject-L1',
+      name: config.deploy.codeBuildProjectName,
       source: {
         type: 'CODEPIPELINE',
         buildSpec: '.build/buildspec.yml',
@@ -110,7 +128,7 @@ export class DeployStack extends cdk.Stack {
           },
           {
             name: 'AWS_DEFAULT_REGION',
-            value: 'eu-central-1',
+            value: region,
           },
           {
             name: 'AWS_ACCOUNT_ID',
@@ -136,7 +154,7 @@ export class DeployStack extends cdk.Stack {
 
     // CodePipeline
     const pipeline = new codepipeline.CfnPipeline(this, 'DemoPipeline', {
-      name: 'DemoPipeline-L1',
+      name: config.deploy.pipelineName,
       roleArn: codepipelineRole.attrArn,
       stages: [
         {
@@ -152,9 +170,9 @@ export class DeployStack extends cdk.Stack {
               },
               outputArtifacts: [{ name: 'SourceOutput' }],
               configuration: {
-                ConnectionArn: 'arn:aws:codeconnections:eu-central-1:664492798177:connection/8b8f02d2-f161-4f3f-a84b-a02b94579135',
-                FullRepositoryId: 'tp0lajz3r/nginx-cdk-typescript',
-                BranchName: 'l1',
+                ConnectionArn: condeconnectionsArn,
+                FullRepositoryId: repository,
+                BranchName: config.deploy.branch,
               },
               runOrder: 1,
             },

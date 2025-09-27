@@ -1,0 +1,53 @@
+{
+  "global": {
+    "env": "demo"
+  },
+  "cognito": {
+    "userPoolName": "demo-user-pool-l1",
+    "userPoolClientName": "demo-user-pool-client-l1",
+    "userPoolDomainPrefix": "demo-user-pool-domain-l1"
+  },
+  "deploy": {
+    "branch": "l1",
+    "artifactBucketName": "codepipeline-demo-l1-artifact-store",
+    "codeBuildProjectName": "DemoBuildProject-L1",
+    "pipelineName": "DemoPipeline-L1"
+  },
+  "ecs": {
+    "logGroupName": "/ecs/nginx",
+    "taskDefinitionFamily": "nginx-task-def-l1",
+    "taskCpu": "256",
+    "taskMemory": "512",
+    "clusterName": "demo-ecs-cluster-l1",
+    "serviceName": "demo-ecs-service-l1"
+  },
+  "nginx": {
+    "ecrRepositoryName": "demo-nginx",
+    "ecsSecurityGroupName": "ecs-security-group-l1",
+    "albSecurityGroupName": "alb-security-group-l1",
+    "targetGroupName": "alb-target-group-l1",
+    "loadBalancerName": "application-load-balancer-l1"
+  },
+  "vpc": {
+    "vpcName": "demo-vpc",
+    "maxAzs": 2,
+    "natGateways": 1,
+    "cidrBlock": "10.60.0.0/16",
+    "privateSubnet1": {
+      "name": "demo-private-subnet-1",
+      "cidr": "10.60.0.0/22"
+    },
+    "privateSubnet2": {
+      "name": "demo-private-subnet-2",
+      "cidr": "10.60.4.0/22"
+    },
+    "publicSubnet1": {
+      "name": "demo-public-subnet-1",
+      "cidr": "10.60.32.0/24"
+    },
+    "publicSubnet2": {
+      "name": "demo-public-subnet-2",
+      "cidr": "10.60.33.0/24"
+    }
+  }
+}

@@ -5,18 +5,38 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as fs from 'fs';
+
+const config = JSON.parse(fs.readFileSync('config.json', 'utf-8'));
 
 export class NginxCdkTypescriptStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+    
+    // ENV variables
+    const hostedZoneId = process.env.HOSTED_ZONE_ID || config.nginx.hostedZoneId;
+    const domainName = process.env.DOMAIN_NAME || config.nginx.domainName;
+    const recordName = process.env.RECORD_NAME || config.nginx.recordName;
+    
+    // Validate required environment variables
+    if (!hostedZoneId) {
+      throw new Error('HOSTED_ZONE_ID environment variable is not set and not found in config.json');
+    }
+    if (!domainName) {
+      throw new Error('DOMAIN_NAME environment variable is not set and not found in config.json');
+    }
+    if (!recordName) {
+      throw new Error('RECORD_NAME environment variable is not set and not found in config.json');
+    } 
 
 
+    // Imported values from other stacks
     const vpcId = cdk.Fn.importValue('VPCId');
     const VPCCidrBlock = cdk.Fn.importValue('VPCCidrBlock');
 
     // ECR Repository
     const ecrRepo = new ecr.CfnRepository(this, 'demo-nginx', {
-      repositoryName: 'demo-nginx',
+      repositoryName: config.nginx.ecrRepositoryName,
       imageTagMutability: 'MUTABLE',
       imageScanningConfiguration: {
         scanOnPush: true,
@@ -24,18 +44,18 @@ export class NginxCdkTypescriptStack extends cdk.Stack {
       tags: [
         {
           key: 'Name',
-          value: 'demo-nginx',
+          value: config.nginx.ecrRepositoryName,
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
 
     // ECS Security Gorup
     const ecsSecurityGroup = new ec2.CfnSecurityGroup(this, 'EcsSecurityGroup', {
-      groupName: 'ecs-security-group-l1',
+      groupName: config.nginx.ecsSecurityGroupName,
       groupDescription: 'Security group for ECS tasks',
       vpcId: vpcId,
       securityGroupIngress: [
@@ -57,43 +77,38 @@ export class NginxCdkTypescriptStack extends cdk.Stack {
       tags: [
         {
           key: 'Name',
-          value: 'ecs-security-group-l1',
+          value: config.nginx.ecsSecurityGroupName,
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
   
   // ALB
   // ACM
-  const hostedZoneId = 'Z07413872C5IBFYJ4VZ9';
   const certificate = new acm.CfnCertificate(this, 'do-tCertificate', {
-    domainName: 'do-t.tech',
+    domainName: domainName,
     validationMethod: 'DNS',
     domainValidationOptions: [
       {
-        domainName: 'do-t.tech',
+        domainName: domainName,
         hostedZoneId: hostedZoneId,
       },
     ],
-    subjectAlternativeNames: ['*.do-t.tech'],
+    subjectAlternativeNames: ['*.' + domainName],
     tags: [
       {
-        key: 'Name',
-        value: 'demo-acm-certificate',
-      },
-      {
         key: 'env',
-        value: 'demo',
+        value: config.global.env,
       }
     ],
   });
 
   // Security Group
   const albSecurityGroup = new ec2.CfnSecurityGroup(this, 'AlbSecurityGroup', {
-    groupName: 'alb-security-group-l1',
+    groupName: config.nginx.albSecurityGroupName,
     groupDescription: 'Security group for ALB',
     vpcId: vpcId,
     securityGroupIngress: [
@@ -121,18 +136,18 @@ export class NginxCdkTypescriptStack extends cdk.Stack {
     tags: [
       {
         key: 'Name',
-        value: 'alb-security-group-l1',
+        value: config.nginx.albSecurityGroupName,
       },
       {
         key: 'env',
-        value: 'demo',
+        value: config.global.env,
       }
     ],
   });
 
   // Target Group
   const targetGroup = new elbv2.CfnTargetGroup(this, 'AlbTargetGroup', {
-    name: 'alb-target-group-l1',
+    name: config.nginx.targetGroupName,
     port: 80,
     protocol: 'HTTP',
     vpcId: vpcId,
@@ -145,18 +160,18 @@ export class NginxCdkTypescriptStack extends cdk.Stack {
     tags: [
       {
         key: 'Name',
-        value: 'alb-target-group-l1',
+        value: config.nginx.targetGroupName,
       },
       {
         key: 'env',
-        value: 'demo',
+        value: config.global.env,
       }
     ],
   });
 
   // Load Balancer
   const loadBalancer = new elbv2.CfnLoadBalancer(this, 'ApplicationLoadBalancer', {
-    name: 'application-load-balancer-l1',
+    name: config.nginx.loadBalancerName,
     subnets: [
       cdk.Fn.importValue('PublicSubnet1Id'),
       cdk.Fn.importValue('PublicSubnet2Id')
@@ -167,11 +182,11 @@ export class NginxCdkTypescriptStack extends cdk.Stack {
     tags: [
       {
         key: 'Name',
-        value: 'application-load-balancer-l1',
+        value: config.nginx.loadBalancerName,
       },
       {
         key: 'env',
-        value: 'demo',
+        value: config.global.env,
       }
     ],
   });
@@ -226,7 +241,7 @@ export class NginxCdkTypescriptStack extends cdk.Stack {
   // Route53 A Record
 
   const albRecords = new route53.CfnRecordSet(this, 'AlbRecord', {
-    name: 'demo-nginx-l1.do-t.tech.',
+    name: recordName,
     type: 'A',
     hostedZoneId: hostedZoneId,
     aliasTarget: {

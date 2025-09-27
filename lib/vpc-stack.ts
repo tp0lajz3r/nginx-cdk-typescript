@@ -1,6 +1,9 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
+import * as fs from 'fs';
+
+const config = JSON.parse(fs.readFileSync('config.json', 'utf-8'));
 
 
 export class VpcStack extends cdk.Stack {
@@ -10,17 +13,17 @@ export class VpcStack extends cdk.Stack {
     const azs = cdk.Stack.of(this).availabilityZones.slice(0, 2);
 
     const vpc = new ec2.CfnVPC(this, 'demo-vpc', {
-      cidrBlock: '10.60.0.0/16',
+      cidrBlock: config.vpc.cidrBlock,
       enableDnsHostnames: true,
       enableDnsSupport: true,
       tags: [
         {
           key: 'Name',
-          value: 'demo-vpc',
+          value: config.vpc.vpcName,
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
 
@@ -28,66 +31,66 @@ export class VpcStack extends cdk.Stack {
 
     const privateSubnet1 = new ec2.CfnSubnet(this, 'demo-private-subnet-1', {
       vpcId: vpc.ref,
-      cidrBlock: '10.60.0.0/22',
+      cidrBlock: config.vpc.privateSubnet1.cidr,
       availabilityZone: azs[0],
       tags: [
         {
           key: 'Name',
-          value: 'demo-private-subnet-1',
+          value: config.vpc.privateSubnet1.name,
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
 
     const privateSubnet2 = new ec2.CfnSubnet(this, 'demo-private-subnet-2', {
       vpcId: vpc.ref,
-      cidrBlock: '10.60.4.0/22',
+      cidrBlock: config.vpc.privateSubnet2.cidr,
       availabilityZone: azs[1],
       tags: [
         {
           key: 'Name',
-          value: 'demo-private-subnet-2',
+          value: config.vpc.privateSubnet2.name,
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
 
     const publicSubnet1 = new ec2.CfnSubnet(this, 'demo-public-subnet-1', {
       vpcId: vpc.ref,
-      cidrBlock: '10.60.32.0/24',
+      cidrBlock: config.vpc.publicSubnet1.cidr,
       availabilityZone: azs[0],
       mapPublicIpOnLaunch: true,
       tags: [
         {
           key: 'Name',
-          value: 'demo-public-subnet-1',
+          value: config.vpc.publicSubnet1.name,
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
 
     const publicSubnet2 = new ec2.CfnSubnet(this, 'demo-public-subnet-2', {
       vpcId: vpc.ref,
-      cidrBlock: '10.60.33.0/24',
+      cidrBlock: config.vpc.publicSubnet2.cidr,
       availabilityZone: azs[1],
       mapPublicIpOnLaunch: true,
       tags: [
         {
           key: 'Name',
-          value: 'demo-public-subnet-2',
+          value: config.vpc.publicSubnet2.name,
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
@@ -100,7 +103,7 @@ export class VpcStack extends cdk.Stack {
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
@@ -119,7 +122,7 @@ export class VpcStack extends cdk.Stack {
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
@@ -149,7 +152,7 @@ export class VpcStack extends cdk.Stack {
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
@@ -164,7 +167,7 @@ export class VpcStack extends cdk.Stack {
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
@@ -178,7 +181,7 @@ export class VpcStack extends cdk.Stack {
         },
         {
           key: 'env',
-          value: 'demo',
+          value: config.global.env,
         }
       ],
     });
