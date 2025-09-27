@@ -28,6 +28,7 @@ export class DeployStack extends cdk.Stack {
         'arn:aws:iam::aws:policy/AmazonS3FullAccess',
         'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser',
         'arn:aws:iam::aws:policy/AmazonECS_FullAccess',
+        'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess',
       ],
       roleName: 'CodeBuildServiceRole',
     });
@@ -66,7 +67,7 @@ export class DeployStack extends cdk.Stack {
             Action: [
               'codestar-connections:UseConnection'
             ],
-            Resource: 'arn:aws:codeconnections:eu-central-1:664492798177:connection/75bbfa41-fa06-4410-843d-a165aeb828c4'
+            Resource: 'arn:aws:codeconnections:eu-central-1:664492798177:connection/8b8f02d2-f161-4f3f-a84b-a02b94579135'
           }
         ]
       }
@@ -151,7 +152,7 @@ export class DeployStack extends cdk.Stack {
               },
               outputArtifacts: [{ name: 'SourceOutput' }],
               configuration: {
-                ConnectionArn: 'arn:aws:codeconnections:eu-central-1:664492798177:connection/75bbfa41-fa06-4410-843d-a165aeb828c4',
+                ConnectionArn: 'arn:aws:codeconnections:eu-central-1:664492798177:connection/8b8f02d2-f161-4f3f-a84b-a02b94579135',
                 FullRepositoryId: 'tp0lajz3r/nginx-cdk-typescript',
                 BranchName: 'l1',
               },
