@@ -1,0 +1,30 @@
+{
+  "global": {
+    "env": "demo"
+  },
+  "cognito": {
+    "userPoolName": "demo-user-pool-l2",
+    "userPoolClientName": "demo-user-pool-client-l2",
+    "userPoolDomainPrefix": "demo-user-pool-domain-l2"
+  },
+  "ecs": {
+    "taskDefinitionFamily": "nginx-task-def-l2",
+    "taskCpu": "256",
+    "taskMemory": "512",
+    "clusterName": "demo-ecs-cluster-l2",
+    "serviceName": "demo-ecs-service-l2",
+    "ecsSecurityGroupName": "ecs-security-group-l2",
+    "albSecurityGroupName": "alb-security-group-l2",
+    "loadBalancerName": "application-load-balancer-l2",
+    "targetGroupName": "alb-target-group-l2"
+  },
+  "nginx": {
+    "ecrRepositoryName": "demo-nginx-l2"
+  },
+  "vpc": {
+    "vpcName": "demo-vpc",
+    "maxAzs": 2,
+    "natGateways": 1,
+    "cidrBlock": "10.61.0.0/16"
+  }
+}

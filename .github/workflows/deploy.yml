@@ -1,4 +1,4 @@
-name: Deploy Demo CDK
+name: Deploy Demo CDK - L2
 
 on:
   workflow_dispatch:
@@ -32,11 +32,9 @@ jobs:
         run: cdk deploy --all --require-approval never
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          CODECONNECTION_ARN: ${{ secrets.CODECONNECTION_ARN }}
-          REPOSITORY: ${{ secrets.REPOSITORY }}
-          COGNITO_URL1 : ${{ secrets.COGNITO_URL1 }}
-          COGNITO_URL2 : ${{ secrets.COGNITO_URL2 }}
+          COGNITO_URL1 : ${{ secrets.COGNITO_URL1_L2 }}
+          COGNITO_URL2 : ${{ secrets.COGNITO_URL2_L2 }}
           DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
-          RECORD_NAME: ${{ secrets.RECORD_NAME }}
+          RECORD_NAME: ${{ secrets.RECORD_NAME_L2 }}
           HOSTED_ZONE_ID: ${{ secrets.HOSTED_ZONE_ID }}
 
