@@ -58,7 +58,7 @@ export class CognitoStack extends cdk.Stack {
       },
     });
 
-    cdk.Tags.of(userPool).add('Name', config.global.userPoolName);
+    cdk.Tags.of(userPool).add('Name', config.cognito.userPoolName);
     cdk.Tags.of(userPool).add('env', config.global.env);
 
     // Outputs
