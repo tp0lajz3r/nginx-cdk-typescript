@@ -54,7 +54,7 @@ export class CognitoStack extends cdk.Stack {
     // Cognito Domain
     const userPoolDomain = userPool.addDomain('CognitoDomain', {
       cognitoDomain: {
-        domainPrefix: config.cognito.userPoolDomainPrefix,
+        domainPrefix: 'demo-nginx-user-pool-l2',
       },
     });
 

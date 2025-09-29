@@ -43,7 +43,7 @@ export class EcsStack extends cdk.Stack {
     // Add container to task definition
     const container = taskDefinition.addContainer('nginx-container', {
       image: ecs.ContainerImage.fromRegistry(`${EcrRepositoryUri}:l2`),
-      logging: ecs.LogDrivers.awsLogs({ streamPrefix: config.ecs.taaskDefinitionFamily }),
+      logging: ecs.LogDrivers.awsLogs({ streamPrefix: config.ecs.taskDefinitionFamily }),
       portMappings: [{ containerPort: 80 }],
     });
 

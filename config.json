@@ -5,7 +5,7 @@
   "cognito": {
     "userPoolName": "demo-user-pool-l2",
     "userPoolClientName": "demo-user-pool-client-l2",
-    "userPoolDomainPrefix": "demo-nginx-user-pool-domain-l2"
+    "userPoolDomainPrefix": "demo-nginx-user-pool-l2"
   },
   "ecs": {
     "taskDefinitionFamily": "nginx-task-def-l2",
