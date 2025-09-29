@@ -81,7 +81,7 @@ export class EcsStack extends cdk.Stack {
     });
 
     const certificate = new acm.Certificate(this, 'MyCertificate', {
-      domainName: config.ecs.domainName,
+      domainName: domainName!,
       validation: acm.CertificateValidation.fromDns(hostedZone),
       subjectAlternativeNames: ['*.' + domainName!],
     });
